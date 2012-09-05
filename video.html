@@ -1,0 +1,101 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style"
+          content="black-translucent">
+
+    <script src="jquery-1.7.1.js"></script>
+    <title>测试</title>
+</head>
+<body>
+<video id="myVideo" autoplay oncanplay='startVideo()' onended='stopTimeLine()' autobuffer='true' with='400px' height='300px'>
+    <source src='9.mp4' type='video/mp4; codecs="avc1.42E01E ,mp4a.40.2"' />
+</video>
+<canvas id='timeline' with='400px' height='300px' />
+<script type="text/javascript">
+
+    //抓屏的秒数
+    var updateInerval=5000;
+
+    var frameWith=100;
+    var frameHeight=75;
+
+    var frameRows=4;
+    var frameColums=4;
+
+    var frameGrid=frameRows*frameColums;
+
+    var frameCount=0;
+
+    var interVaild;
+
+    var videoStarted=false;
+
+    function updateFrame(){
+
+        var video=document.getElementById("myVideo");
+        var timeline=document.getElementById("timeline");
+
+        var ctx=timeline.getContext('2d');
+        var framePosition=frameCount%frameGrid;
+        var frameX=(framePosition % frameColums)*frameWith;
+        var frameY=(Math.floor(framePosition/frameRows))*frameHeight;
+        frameCount++;
+
+        ctx.drawImage(video,0,0,400,300,frameX,frameY,frameWith,frameHeight);
+
+    }
+    function startVideo(){
+
+        if(videoStarted){
+            return;
+        }
+
+        videoStarted=true;
+        updateFrame();
+        //setInterval() 方法会不停地调用函数，直到 clearInterval() 被调用或窗口被关闭。由 setInterval() 返回的 ID 值可用作 clearInterval() 方法的参数
+        interVaild=setInterval(updateFrame,updateInerval);
+    }
+
+    $('#timeline').on('click', function(evt){
+        console.log('click---------');
+        var offX=evt.offsetX;
+        var offY=evt.offsetY;
+
+        var clickedFrame=Math.floor(offY/frameHeight)*frameRows;
+
+        clickedFrame+=Math.floor(offX/frameWith);
+
+        var seekedFrame=(((Math.floor(frameCount /frameGrid)) * frameGrid) +clickedFrame);
+
+        if(clickedFrame>(frameCount%16))
+        {
+            seekedFrame-=frameGrid;
+        }
+
+        console.log('seekedFrame=',seekedFrame);
+
+        if(seekedFrame<0)
+        {
+            return;
+        }
+        console.log('执行....');
+        var video=document.getElementById("myVideo");
+        video.currentTime=seekedFrame*updateInerval/1000;  //10;
+        frameCount=seekedFrame;
+    });
+    function stopTimeLine(){
+        clearInterval(interVaild);
+    }
+
+</script>
+
+
+
+
+</body>
+</html>
